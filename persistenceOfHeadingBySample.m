@@ -17,6 +17,7 @@ function [persistenceArray] = persistenceOfHeadingBySample(var_heading_threshold
 %          An array with the same length as bar_position_array where every
 %          value tells you for that time point of the data set how many seconds the fly has been facing the same direction (within range of var_heading_threshold)
 %
+% Yvette Fisher 4/2022
 
 persistenceArray = zeros(length(bar_position_array),1); % initiate values
 
@@ -35,19 +36,6 @@ for i = 2:length(bar_position_array)
         mostRecentAboveThreshold = max(aboveThresholdIndex);
         persistenceArray(i) = (i - mostRecentAboveThreshold) / sampleRate;
     end
-    %     for j = 1:i-1
-    %         differenceInHeading = head_current - bar_position_array(i - j);
-    %
-    %         if (differenceInHeading > var_heading_threshold || j == i-1)
-    %         %When difference exceeds threshold OR in cases when get to the end of the array of j without finding a
-    %         %change then use j to calculate how many seconds the flies has been
-    %         %at this heading
-    %             persistenceInSec = j / sampleRate;
-    %
-    %             persistenceArray(i) = persistenceInSec;
-    %             break
-    %         end
-    %     end
 end
 
 
