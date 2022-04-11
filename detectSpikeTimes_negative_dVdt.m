@@ -1,6 +1,6 @@
-function [ spikeRasterOut, spikeIndexOut, spikeTimesOut ] = detectSpikeTimes(voltage, timeArray, dVdT_SPIKE_THRESHOLD, varargin)
+function [ spikeRasterOut, spikeIndexOut, spikeTimesOut ] = detectSpikeTimes_negative_dVdt(voltage, timeArray, dVdT_SPIKE_THRESHOLD, varargin)
 %DETECTSPIKETIMES spike detection for whole cell current clamp recordings
-%   This function analyzes the voltage trace from a current clamp
+%   This function analyzes the dV/dt of the inverted voltage trace from a current clamp
 %   recordings.  The function will also plot the trace with spikes detected
 %   marked
 %
@@ -21,33 +21,20 @@ function [ spikeRasterOut, spikeIndexOut, spikeTimesOut ] = detectSpikeTimes(vol
 %          spikeIndexOut - index values when the spike start time occured
 %          spikeTimesOut - times (sec) when the spike start times occured
 %
-%    Yvette Fisher, MBL, 7/2019, updated 7/24/19
-
-% diffVoltage = diff( voltage );
-% if( nargin > 3)
-%   lowPassCutOff = varargin{1};
-%   sampleRate = varargin{2};
-%   % low pass filter the diff trace
-%   diffVoltage = lowPassFilter( diffVoltage,  lowPassCutOff , sampleRate );
-% end
-
+%    Yvette Fisher, 1/2021
 
 if( nargin > 3)
   lowPassCutOff = varargin{1};
   sampleRate = varargin{2};
-  % low pass filter the voltage
-  filteredVoltage = lowPassFilter( voltage,  lowPassCutOff , sampleRate );
-
-    diffVoltage = diff( filteredVoltage );
-else
-    diffVoltage = diff(voltage);
+  % low pass filter the inverted voltage trace
+  filteredVoltage = lowPassFilter( -1*voltage,  lowPassCutOff , sampleRate );
 end
+diffVoltage = diff( filteredVoltage );
 
 
 % FIND PEAKS in diff of Voltage 
-%WIDTHS_REQUIRED = 10;
-PEAK_WIDTH_REQUIRED = 0.0015*sampleRate; % 0.0015 s = 1.5 ms ~spike event width required
-DIST_BETWEEN_PEAKS = 0.002*sampleRate; %0.0025 s = 2.0 ms refreactory period
+PEAK_WIDTH_REQUIRED = 0.0025*sampleRate; % 0.0025 s = 2.5 ms ~spike secondary event width required
+DIST_BETWEEN_PEAKS = 0.002*sampleRate; %0.002 s = 2 ms refreactory period
 
 
 %[~ , spikeIndex] = findpeaks( diffVoltage, 'MinPeakHeight', dVdT_SPIKE_THRESHOLD, 'MinPeakWidth', WIDTHS_REQUIRED);
@@ -69,7 +56,7 @@ ax(2) = subplot(2, 1, 2);
 plot( timeArray(1:end-1), diffVoltage ); hold on; box off
 scatter( timeArray(spikeIndex) , diffVoltage(spikeIndex) );
 xlabel('seconds');
-ylabel('derivative of membrane voltage (mV)');
+ylabel('-1* dV/dt (mV)');
 
 linkaxes(ax,'x');
 
