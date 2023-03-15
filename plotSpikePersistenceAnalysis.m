@@ -15,24 +15,27 @@ longest persistence trial and 9 are just 9 angle bins, 30 degrees each.
 cd(pathname)
 load(fileName);
 
-%% Build variables for plotting 
+% Build variables for plotting 
 % Parameters for plotting 
 DURATION_LIMIT_Sec = 15; % the longest persistent data to include in the heatmap
 
 % Load in which spike means to plot (smoothing options, gaussian or expentiail) 
 meanSpikeMatrix = persistentHM.Heatmap_spike_mean_250ms_exp;
 
+meanVmMatrix = persistentHM.Heatmap_voltage_mean;
+
 spikeValuesCellArray = persistentHM.Heatmap_spike_value_250ms_exp;
 
 spikeValuesTransient = spikeValuesCellArray(1,:); % first second
 
 
-%% Plot spike rate heat map
+% Plot spike rate heat map
 figure('Position',[50, 50, 800, 500]);
 set(gcf, 'Color', 'w');
 
 matrixToPlot = meanSpikeMatrix(1:DURATION_LIMIT_Sec,:); % clips values past duration limit
 
+colormap default;
 imagesc( matrixToPlot ,'AlphaData', ~isnan(matrixToPlot) ); hold on;
 set(gca,'color',0*[1 1 1]); 
 
@@ -48,21 +51,41 @@ ylabel('Duration fly spent at this angle (sec)')
 title(["Mean spike rate " fileName]);
 niceaxes
 
-%% Plot distrubtion of spikes rates in first (transient) bin
-figure('Position',[50, 50, 1800, 500])
+% %Plot distrubtion of spikes rates in first (transient) bin
+% figure('Position',[50, 50, 1800, 500])
+% set(gcf, 'Color', 'w');
+% 
+% for i= 1:length(spikeValuesTransient)
+%     subplot(1,length(spikeValuesTransient),i);
+% 
+%     histogram(spikeValuesTransient{i},'Normalization','pdf');
+% end
+
+
+
+% TODO look at the Std of the spike rates.... and also occupancy...
+
+
+
+
+% Plot Vm heat map
+figure('Position',[50, 50, 800, 500]);
 set(gcf, 'Color', 'w');
 
-for i= 1:length(spikeValuesTransient)
-    subplot(1,length(spikeValuesTransient),i);
+matrixToPlot = meanVmMatrix(1:DURATION_LIMIT_Sec,:); % clips values past duration limit
 
-    histogram(spikeValuesTransient{i},'Normalization','pdf');
-end
+colormap gray;
+imagesc( matrixToPlot ,'AlphaData', ~isnan(matrixToPlot) ); hold on;
+set(gca,'color',0*[1 1 1]); 
 
+c = colorbar; % color scale bar
+c.Label.String = 'mean membrane voltage (mV)';
 
+% approximate angles for X tick labels
+xLabelsAngleDegs = 0:persistentHM.heading_bin_size:persistentHM.heading_bin_size*length(matrixToPlot(1,:))*persistentHM.heading_bin_size; 
+set(gca, 'xticklabel', xLabelsAngleDegs )
+xlabel('Relative pattern position (deg)')
+ylabel('Duration fly spent at this angle (sec)')
 
-%% look at the Std of the spike rates.... and also occupancy...
-
-
-
-
-%% Plot Vm 
+title(["Mean membrane voltage " fileName]);
+niceaxes
